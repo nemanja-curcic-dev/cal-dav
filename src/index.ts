@@ -165,7 +165,7 @@ export class DefaultCalDavClient {
         }
     };
 
-    createEvent = async(id: string, referenceIds: string[], title: string, description: string, location: string, startDate: ICAL.TimeJsonData, endDate: ICAL.TimeJsonData, attendees: Attendee[], categories: string[]): Promise<void> => {
+    createEvent = async(eventUrl: string, id: string, referenceIds: string[], title: string, description: string, location: string, startDate: ICAL.TimeJsonData, endDate: ICAL.TimeJsonData, attendees: Attendee[], categories: string[]): Promise<void> => {
         try{
             // wrap request data in VCALENDAR
             const calendar = new ICAL.Component('vcalendar');
@@ -201,14 +201,14 @@ export class DefaultCalDavClient {
             // change ATTENDEE: to ATTENDEE;
             eventString = eventString.replace(/ATTENDEE:/gi, 'ATTENDEE;');
 
-            await this.service.createUpdateEvent(eventString, id);
+            await this.service.createUpdateEvent(eventString, eventUrl);
             logger.info(`CalDavClient.CreateUpdateEvent: Successfully created event ${id}. `);
         } catch(e){
             logger.error(`CalDavClient.CreateEvent: ${e.message}. `);
         }
     };
 
-    updateEvent = async(event: ICAL.Event, referenceIds: string[], title: string, description: string, location: string, startDate: ICAL.TimeJsonData, endDate: ICAL.TimeJsonData, attendees: Attendee[], categories: string[]): Promise<void> => {
+    updateEvent = async(eventUrl: string, event: ICAL.Event, referenceIds: string[], title: string, description: string, location: string, startDate: ICAL.TimeJsonData, endDate: ICAL.TimeJsonData, attendees: Attendee[], categories: string[]): Promise<void> => {
         try{
             event.summary = title;
             event.description = description;
@@ -239,7 +239,7 @@ export class DefaultCalDavClient {
             let eventString = event.toString();
             eventString = eventString.replace(/ATTENDEE:/gi, 'ATTENDEE;');
 
-            await this.service.createUpdateEvent('BEGIN:VCALENDAR\r\n' + eventString + '\r\nEND:VCALENDAR', event.uid);
+            await this.service.createUpdateEvent('BEGIN:VCALENDAR\r\n' + eventString + '\r\nEND:VCALENDAR', eventUrl);
         } catch(e) {
             logger.error(`CalDavClient.UpdateEvent: ${e.message}. `);
         }
