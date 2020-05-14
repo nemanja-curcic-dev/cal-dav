@@ -55,7 +55,7 @@ var DefaultCalDavParser = /** @class */ (function () {
                             obj = response_1[_i];
                             eventData = obj['d:propstat'][0]['d:prop'][0]['cal:calendar-data'][0];
                             if (eventData) {
-                                events.push(eventData);
+                                events.push({ event: eventData, url: obj['d:href'][0] });
                             }
                         }
                         return [2 /*return*/, events];

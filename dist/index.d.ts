@@ -6,7 +6,8 @@ export interface CalDavClient {
     getEvent(eventUid: string): Promise<ICAL.Event | undefined>;
     deleteEvent(eventUid: string): Promise<void>;
     listAllEvents(): Promise<ICAL.Event[]>;
-    createUpdateEvent(id: string, referenceIds: string[], title: string, description: string, location: string, startDate: ICAL.TimeJsonData, endDate: ICAL.TimeJsonData, attendees: Attendee[], categories: string[]): Promise<void>;
+    createEvent(id: string, referenceIds: string[], title: string, description: string, location: string, startDate: ICAL.TimeJsonData, endDate: ICAL.TimeJsonData, attendees: Attendee[], categories: string[]): Promise<void>;
+    updateEvent(event: ICAL.Event, referenceIds: string[], title: string, description: string, location: string, startDate: ICAL.TimeJsonData, endDate: ICAL.TimeJsonData, attendees: Attendee[], categories: string[]): Promise<void>;
     listEventsInTimeRange(startDate: Date, endDate?: Date): Promise<ICAL.Event[]>;
 }
 export declare class DefaultCalDavClient {
@@ -17,5 +18,6 @@ export declare class DefaultCalDavClient {
     deleteEvent: (eventUid: string) => Promise<void>;
     listAllEvents: () => Promise<ICAL.Event[]>;
     listEventsInTimeRange: (startDate: Date, endDate?: Date) => Promise<ICAL.Event[]>;
-    createUpdateEvent: (id: string, referenceIds: string[], title: string, description: string, location: string, startDate: any, endDate: any, attendees: Attendee[], categories: string[]) => Promise<void>;
+    createEvent: (id: string, referenceIds: string[], title: string, description: string, location: string, startDate: any, endDate: any, attendees: Attendee[], categories: string[]) => Promise<void>;
+    updateEvent: (event: any, referenceIds: string[], title: string, description: string, location: string, startDate: any, endDate: any, attendees: Attendee[], categories: string[]) => Promise<void>;
 }

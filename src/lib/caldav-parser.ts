@@ -1,11 +1,13 @@
 import {parseStringPromise} from 'xml2js';
 
 export interface CalDavParser {
-    parseListOfEvents(responseData: string): Promise<string[]>;
+    parseListOfEvents(responseData: string): Promise<{event: string; url: string}[]>;
+
+    parseEvent(responseData: string): Promise<string>;
 }
 
 export class DefaultCalDavParser implements CalDavParser {
-    parseListOfEvents = async(responseData: string): Promise<string[]> => {
+    parseListOfEvents = async(responseData: string): Promise<{event: string; url: string}[]> => {
         try{
             const events = [];
 
@@ -16,12 +18,21 @@ export class DefaultCalDavParser implements CalDavParser {
                 const eventData = obj['d:propstat'][0]['d:prop'][0]['cal:calendar-data'][0];
 
                 if(eventData){
-                    events.push(eventData);
+                    events.push({event: eventData, url: obj['d:href'][0]});
                 }
             }
             return events;
         } catch (TypeError) {
             return [];
+        }
+    };
+
+    parseEvent = async(responseData: string): Promise<string> => {
+        try{
+            const xml = await parseStringPromise(responseData);
+            return xml['d:multistatus']['d:response'][0]['d:propstat'][0]['d:prop'][0]['cal:calendar-data'][0];
+        } catch (TypeError) {
+            return '';
         }
     };
 }

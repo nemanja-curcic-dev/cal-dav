@@ -1,11 +1,11 @@
 {
   "name": "@nemanjacurcic/cal-dav",
-  "version": "1.0.19",
+  "version": "1.2.6",
   "description": "Simple cal dav client.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "start": "nodemon --exec babel-node --extensions \".js,.ts\" src/index.ts",
+    "start": "nodemon --exec babel-node --extensions \".js,.ts\" src/test.ts",
     "build": "babel --extensions \".js,.ts\" src --out-dir dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

@@ -102,7 +102,7 @@ var DefaultCalDavClient = /** @class */ (function () {
             });
         }); };
         this.listAllEvents = function () { return __awaiter(_this, void 0, void 0, function () {
-            var response, events, eventsData, _i, eventsData_1, eventData, calData, comp, vevents, e_3;
+            var response, events, eventsData, _i, eventsData_1, eventData, calData, comp, vevents, i, urlParts, e_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -118,14 +118,20 @@ var DefaultCalDavClient = /** @class */ (function () {
                         if (eventsData.length) {
                             for (_i = 0, eventsData_1 = eventsData; _i < eventsData_1.length; _i++) {
                                 eventData = eventsData_1[_i];
-                                calData = ICAL.parse(eventData);
+                                calData = ICAL.parse(eventData.event);
                                 comp = new ICAL.Component(calData);
                                 vevents = comp.getAllSubcomponents('vevent');
                                 events.push.apply(events, vevents);
                             }
                         }
+                        events = events.map(function (event) { return new ICAL.Event(event); });
+                        for (i = 0; i < events.length; i++) {
+                            urlParts = eventsData[i].url.split('/');
+                            events[i].component.addPropertyWithValue('url', urlParts[urlParts.length - 1]);
+                            /* eslint-enable security/detect-object-injection */
+                        }
                         logger_1["default"].info('CalDavClient.ListAllEvents: Successfully listed all events. ');
-                        return [2 /*return*/, events.map(function (event) { return new ICAL.Event(event); })];
+                        return [2 /*return*/, events];
                     case 3: return [2 /*return*/, []];
                     case 4:
                         e_3 = _a.sent();
@@ -136,7 +142,7 @@ var DefaultCalDavClient = /** @class */ (function () {
             });
         }); };
         this.listEventsInTimeRange = function (startDate, endDate) { return __awaiter(_this, void 0, void 0, function () {
-            var response, events, eventsData, _i, eventsData_2, eventData, calData, comp, vevents, e_4;
+            var response, events, eventsData, _i, eventsData_2, eventData, calData, comp, vevents, i, urlParts, e_4;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -152,14 +158,20 @@ var DefaultCalDavClient = /** @class */ (function () {
                         if (eventsData.length) {
                             for (_i = 0, eventsData_2 = eventsData; _i < eventsData_2.length; _i++) {
                                 eventData = eventsData_2[_i];
-                                calData = ICAL.parse(eventData);
+                                calData = ICAL.parse(eventData.event);
                                 comp = new ICAL.Component(calData);
                                 vevents = comp.getAllSubcomponents('vevent');
                                 events.push.apply(events, vevents);
                             }
                         }
+                        events = events.map(function (event) { return new ICAL.Event(event); });
+                        for (i = 0; i < events.length; i++) {
+                            urlParts = eventsData[i].url.split('/');
+                            events[i].component.addPropertyWithValue('url', urlParts[urlParts.length - 1]);
+                            /* eslint-enable security/detect-object-injection */
+                        }
                         logger_1["default"].info("CalDavClient.ListEventsInTimRange: Successfully listed events in time range " + startDate + " - " + (endDate ? endDate : '') + ". ");
-                        return [2 /*return*/, events.map(function (event) { return new ICAL.Event(event); })];
+                        return [2 /*return*/, events];
                     case 3: return [2 /*return*/, []];
                     case 4:
                         e_4 = _a.sent();
@@ -169,8 +181,8 @@ var DefaultCalDavClient = /** @class */ (function () {
                 }
             });
         }); };
-        this.createUpdateEvent = function (id, referenceIds, title, description, location, startDate, endDate, attendees, categories) { return __awaiter(_this, void 0, void 0, function () {
-            var calendar, event_2, categoriesProperty, e_5;
+        this.createEvent = function (id, referenceIds, title, description, location, startDate, endDate, attendees, categories) { return __awaiter(_this, void 0, void 0, function () {
+            var calendar, event_2, _i, categories_1, category, categoriesProperty, eventString, e_5;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -185,9 +197,12 @@ var DefaultCalDavClient = /** @class */ (function () {
                         event_2.startDate = new ICAL.Time(startDate);
                         event_2.endDate = new ICAL.Time(endDate);
                         if (categories.length) {
-                            categoriesProperty = new ICAL.Property('categories');
-                            categoriesProperty.setValues(categories);
-                            event_2.component.addProperty(categoriesProperty);
+                            for (_i = 0, categories_1 = categories; _i < categories_1.length; _i++) {
+                                category = categories_1[_i];
+                                categoriesProperty = new ICAL.Property('categories');
+                                categoriesProperty.setValue(category);
+                                event_2.component.addProperty(categoriesProperty);
+                            }
                         }
                         if (attendees.length) {
                             this.addAttendees(attendees, event_2);
@@ -196,14 +211,59 @@ var DefaultCalDavClient = /** @class */ (function () {
                             event_2.component.addPropertyWithValue('referenceids', referenceIds.join(','));
                         }
                         event_2.component.addPropertyWithValue('END', 'VEVENT');
-                        return [4 /*yield*/, this.service.createUpdateEvent(event_2.toString(), id)];
+                        eventString = event_2.toString();
+                        // change ATTENDEE: to ATTENDEE;
+                        eventString = eventString.replace(/ATTENDEE:/gi, 'ATTENDEE;');
+                        return [4 /*yield*/, this.service.createUpdateEvent(eventString, id)];
                     case 1:
                         _a.sent();
                         logger_1["default"].info("CalDavClient.CreateUpdateEvent: Successfully created event " + id + ". ");
                         return [3 /*break*/, 3];
                     case 2:
                         e_5 = _a.sent();
-                        logger_1["default"].error("CalDavClient.CreateUpdateEvent: " + e_5.message + ". ");
+                        logger_1["default"].error("CalDavClient.CreateEvent: " + e_5.message + ". ");
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
+                }
+            });
+        }); };
+        this.updateEvent = function (event, referenceIds, title, description, location, startDate, endDate, attendees, categories) { return __awaiter(_this, void 0, void 0, function () {
+            var _i, categories_2, category, categoriesProperty, eventString, e_6;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        event.summary = title;
+                        event.description = description;
+                        event.location = location;
+                        event.startDate = new ICAL.Time(startDate);
+                        event.endDate = new ICAL.Time(endDate);
+                        event.component.removeAllProperties('categories');
+                        event.component.removeAllProperties('attendee');
+                        event.component.removeAllProperties('referenceids');
+                        if (categories.length) {
+                            for (_i = 0, categories_2 = categories; _i < categories_2.length; _i++) {
+                                category = categories_2[_i];
+                                categoriesProperty = new ICAL.Property('categories');
+                                categoriesProperty.setValue(category);
+                                event.component.addProperty(categoriesProperty);
+                            }
+                        }
+                        if (attendees.length) {
+                            this.addAttendees(attendees, event);
+                        }
+                        if (referenceIds.length) {
+                            event.component.addPropertyWithValue('referenceids', referenceIds.join(','));
+                        }
+                        eventString = event.toString();
+                        eventString = eventString.replace(/ATTENDEE:/gi, 'ATTENDEE;');
+                        return [4 /*yield*/, this.service.createUpdateEvent('BEGIN:VCALENDAR\r\n' + eventString + '\r\nEND:VCALENDAR', event.uid)];
+                    case 1:
+                        _a.sent();
+                        return [3 /*break*/, 3];
+                    case 2:
+                        e_6 = _a.sent();
+                        logger_1["default"].error("CalDavClient.UpdateEvent: " + e_6.message + ". ");
                         return [3 /*break*/, 3];
                     case 3: return [2 /*return*/];
                 }
@@ -215,19 +275,17 @@ var DefaultCalDavClient = /** @class */ (function () {
     DefaultCalDavClient.prototype.addAttendees = function (attendees, event) {
         for (var _i = 0, attendees_1 = attendees; _i < attendees_1.length; _i++) {
             var attendee = attendees_1[_i];
-            var attendeeProp = new ICAL.Property('attendee');
             var attendeeValue = '';
-            if (attendee.email) {
-                attendeeValue += "MAILTO=" + attendee.email + ";";
-            }
-            if (attendee.displayName) {
-                attendeeValue += "CN=" + attendee.displayName + ";";
-            }
             if (attendee.status) {
                 attendeeValue += "PARTSTAT=" + attendee.status + ";";
             }
-            attendeeProp.setValue(attendeeValue);
-            event.component.addProperty(attendeeProp);
+            if (attendee.displayName) {
+                attendeeValue += "CN=" + attendee.displayName;
+            }
+            if (attendee.email) {
+                attendeeValue += ":mailto:" + attendee.email;
+            }
+            event.component.addPropertyWithValue('ATTENDEE', attendeeValue);
         }
     };
     return DefaultCalDavClient;

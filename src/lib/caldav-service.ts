@@ -3,7 +3,9 @@ import moment from 'moment';
 
 
 export interface CalDavService {
-    getEvent(eventUid: string): Promise<AxiosResponse>;
+    getEventByUrl(eventUrl: string): Promise<AxiosResponse>;
+
+    getEventByUid(eventUid: string): Promise<AxiosResponse>;
 
     createUpdateEvent(eventData: string, eventUid: string): Promise<AxiosResponse>;
 
@@ -32,14 +34,49 @@ export class DefaultCalDavService implements CalDavService {
         this.axios = axios || Axios.create({});
     }
 
-    getEvent = async(eventUid: string): Promise<AxiosResponse> => {
+    getEventByUrl = async(eventUrl: string): Promise<AxiosResponse> => {
         // Method for getting single event
         // Response status upon successfull request is 200
-        const url = `${this.calendarUrl}${eventUid}`;
+        const url = `${this.calendarUrl}${eventUrl}`;
 
         return await this.axios.request({
             method: 'GET',
             url: url,
+            auth: {
+                username: this.username,
+                password: this.password
+            }
+        });
+    };
+
+    getEventByUid = async(eventUid: string): Promise<AxiosResponse> => {
+        // Method for getting single event
+        // Response status upon successfull request is 200
+        const url = `${this.calendarUrl}`;
+
+        return await this.axios.request({
+            method: 'REPORT',
+            url: url,
+            headers: {
+                'Content-Type': 'text/calendar; charset=utf-8',
+                'Depth': 1
+            },
+            data: `<C:calendar-query xmlns:C="urn:ietf:params:xml:ns:caldav">
+                    <D:prop xmlns:D="DAV:">
+                        <D:getetag/>
+                        <C:calendar-data/>
+                        </D:prop>
+                        <C:filter>
+                        <C:comp-filter name="VCALENDAR">
+                            <C:comp-filter name="VEVENT">
+                            <C:prop-filter name="UID">
+                                <C:text-match collation="i;octet"
+                                >${eventUid}</C:text-match>
+                            </C:prop-filter>
+                            </C:comp-filter>
+                        </C:comp-filter>
+                        </C:filter>
+                    </C:calendar-query>`,
             auth: {
                 username: this.username,
                 password: this.password
