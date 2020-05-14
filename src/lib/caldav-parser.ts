@@ -3,7 +3,7 @@ import {parseStringPromise} from 'xml2js';
 export interface CalDavParser {
     parseListOfEvents(responseData: string): Promise<{event: string; url: string}[]>;
 
-    parseEvent(responseData: string): Promise<string>;
+    parseEvent(responseData: string): Promise<{event: string; url: string}>;
 }
 
 export class DefaultCalDavParser implements CalDavParser {
@@ -27,12 +27,14 @@ export class DefaultCalDavParser implements CalDavParser {
         }
     };
 
-    parseEvent = async(responseData: string): Promise<string> => {
+    parseEvent = async(responseData: string): Promise<{event: string; url: string}> => {
         try{
             const xml = await parseStringPromise(responseData);
-            return xml['d:multistatus']['d:response'][0]['d:propstat'][0]['d:prop'][0]['cal:calendar-data'][0];
+            const eventData = xml['d:multistatus']['d:response'][0]['d:propstat'][0]['d:prop'][0]['cal:calendar-data'][0];
+            const url = xml['d:multistatus']['d:response'][0]['d:href'][0];
+            return {event: eventData, url: url};
         } catch (TypeError) {
-            return '';
+            return {event: '', url: ''};
         }
     };
 }

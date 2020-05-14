@@ -55,6 +55,7 @@ export class DefaultCalDavClient {
                 const vevent = comp.getFirstSubcomponent('vevent');
     
                 const event = new ICAL.Event(vevent);
+                event.component.addPropertyWithValue('url', eventUrl);
                 logger.info(`CalDavClient.GetEvent: Successfully got event ${event.uid}. `);
                 return event;
             }
@@ -67,11 +68,14 @@ export class DefaultCalDavClient {
         try{
             const response = await this.service.getEventByUid(eventUid);
             if(response.status === 207) {
-                const calData = ICAL.parse(await this.parser.parseEvent(response.data));
+                const parsedData = await this.parser.parseEvent(response.data);
+                const calData = ICAL.parse(parsedData.event);
                 const comp = new ICAL.Component(calData);
                 const vevent = comp.getFirstSubcomponent('vevent');
     
                 const event = new ICAL.Event(vevent);
+                const urlParts = parsedData.url.split('/');
+                event.component.addPropertyWithValue('url', urlParts[urlParts.length - 1]);
                 logger.info(`CalDavClient.GetEvent: Successfully got event ${event.uid}. `);
                 return event;
             }
@@ -80,12 +84,12 @@ export class DefaultCalDavClient {
         }
     };
 
-    deleteEvent = async(eventUid: string): Promise<void> => {
+    deleteEvent = async(eventUrl: string): Promise<void> => {
         try{
-            const response = await this.service.deleteEvent(eventUid);
+            const response = await this.service.deleteEvent(eventUrl);
 
             if(response.status === 204){
-                logger.info(`CalDavClient.DeleteEvent: Successfully deleted event ${eventUid}. `);
+                logger.info(`CalDavClient.DeleteEvent: Successfully deleted event ${eventUrl}. `);
                 return;
             }
         } catch(e) {
