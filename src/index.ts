@@ -13,7 +13,8 @@ export interface CalDavClient {
 
     listAllEvents(): Promise<ICAL.Event[]>;
 
-    createEvent(id: string,
+    createEvent(eventUrl: string,
+        id: string,
         referenceIds: string[],
         title: string,
         description: string,
@@ -23,7 +24,8 @@ export interface CalDavClient {
         attendees: Attendee[],
         categories: string[]): Promise<void>;
 
-    updateEvent(event: ICAL.Event, 
+    updateEvent(eventUrl: string,
+        event: ICAL.Event, 
         referenceIds: string[], 
         title: string, 
         description: string, 
@@ -34,6 +36,8 @@ export interface CalDavClient {
         categories: string[]): Promise<void>;
 
     listEventsInTimeRange(startDate: Date, endDate?: Date): Promise<ICAL.Event[]>;
+
+    multiGetEvents(eventUrls: string[]): Promise<ICAL.Event[]>;
 }
 
 export class DefaultCalDavClient {
@@ -100,29 +104,9 @@ export class DefaultCalDavClient {
     listAllEvents = async(): Promise<ICAL.Event[]> => {
         try{
             const response = await this.service.listAllEvents();
-            let events = [];
     
             if(response.status === 207) {
-                const eventsData = await this.parser.parseListOfEvents(response.data);
-    
-                if(eventsData.length){
-                    for(const eventData of eventsData){
-                        const calData = ICAL.parse(eventData.event);
-                        const comp = new ICAL.Component(calData);
-                        const vevents = comp.getAllSubcomponents('vevent');
-                        events.push(...vevents);
-                    }
-                }
-                events = events.map(event => new ICAL.Event(event));
-
-                for(let i = 0; i < events.length; i++){
-                    /* eslint-disable security/detect-object-injection */
-                    const urlParts = eventsData[i].url.split('/');
-                    events[i].component.addPropertyWithValue('url', urlParts[urlParts.length - 1]);
-                    /* eslint-enable security/detect-object-injection */
-                }
-                logger.info('CalDavClient.ListAllEvents: Successfully listed all events. ');
-                return events;
+                return await this.parseListOfEvents(response.data, 'ListAllEvents');
             }
             return [];
         } catch(e) {
@@ -134,29 +118,23 @@ export class DefaultCalDavClient {
     listEventsInTimeRange = async(startDate: Date, endDate?: Date): Promise<ICAL.Event[]> => {
         try{
             const response = await this.service.listEventsInTimeRange(startDate, endDate);
-            let events = [];
     
             if(response.status === 207) {
-                const eventsData = await this.parser.parseListOfEvents(response.data);
-    
-                if(eventsData.length){
-                    for(const eventData of eventsData){
-                        const calData = ICAL.parse(eventData.event);
-                        const comp = new ICAL.Component(calData);
-                        const vevents = comp.getAllSubcomponents('vevent');
-                        events.push(...vevents);
-                    }
-                }
-                events = events.map(event => new ICAL.Event(event));
+                return this.parseListOfEvents(response.data, 'ListEventsInTimeRange');
+            }
+            return [];
+        } catch(e) {
+            logger.error(`CalDavClient.ListEventsInTimRange: ${e.message}. `);
+            return [];
+        }
+    };
 
-                for(let i = 0; i < events.length; i++){
-                    /* eslint-disable security/detect-object-injection */
-                    const urlParts = eventsData[i].url.split('/');
-                    events[i].component.addPropertyWithValue('url', urlParts[urlParts.length - 1]);
-                    /* eslint-enable security/detect-object-injection */
-                }
-                logger.info(`CalDavClient.ListEventsInTimRange: Successfully listed events in time range ${startDate} - ${endDate ? endDate : ''}. `);
-                return events;
+    multiGetEvents = async(eventUrls: string[]): Promise<ICAL.Event[]> => {
+        try{
+            const response = await this.service.multiGetEvents(eventUrls);
+    
+            if(response.status === 207) {
+                return await this.parseListOfEvents(response.data, 'MultiGetEvents');
             }
             return [];
         } catch(e) {
@@ -243,6 +221,29 @@ export class DefaultCalDavClient {
         } catch(e) {
             logger.error(`CalDavClient.UpdateEvent: ${e.message}. `);
         }
+    };
+
+    private parseListOfEvents = async(responseData: string, method: string): Promise<ICAL.Event[]> => {
+        const eventsData = await this.parser.parseListOfEvents(responseData);
+        let events = [];
+        if(eventsData.length){
+            for(const eventData of eventsData){
+                const calData = ICAL.parse(eventData.event);
+                const comp = new ICAL.Component(calData);
+                const vevents = comp.getAllSubcomponents('vevent');
+                events.push(...vevents);
+            }
+        }
+        events = events.map(event => new ICAL.Event(event));
+
+        for(let i = 0; i < events.length; i++){
+            /* eslint-disable security/detect-object-injection */
+            const urlParts = eventsData[i].url.split('/');
+            events[i].component.addPropertyWithValue('url', urlParts[urlParts.length - 1]);
+            /* eslint-enable security/detect-object-injection */
+        }
+        logger.debug(`${method}: events successfully parsed.`);
+        return events;
     };
 
     private addAttendees(attendees: Attendee[], event: ICAL.Event): void {

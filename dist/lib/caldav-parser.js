@@ -67,7 +67,7 @@ var DefaultCalDavParser = /** @class */ (function () {
             });
         }); };
         this.parseEvent = function (responseData) { return __awaiter(_this, void 0, void 0, function () {
-            var xml, TypeError_2;
+            var xml, eventData, url, TypeError_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -75,10 +75,12 @@ var DefaultCalDavParser = /** @class */ (function () {
                         return [4 /*yield*/, xml2js_1.parseStringPromise(responseData)];
                     case 1:
                         xml = _a.sent();
-                        return [2 /*return*/, xml['d:multistatus']['d:response'][0]['d:propstat'][0]['d:prop'][0]['cal:calendar-data'][0]];
+                        eventData = xml['d:multistatus']['d:response'][0]['d:propstat'][0]['d:prop'][0]['cal:calendar-data'][0];
+                        url = xml['d:multistatus']['d:response'][0]['d:href'][0];
+                        return [2 /*return*/, { event: eventData, url: url }];
                     case 2:
                         TypeError_2 = _a.sent();
-                        return [2 /*return*/, ''];
+                        return [2 /*return*/, { event: '', url: '' }];
                     case 3: return [2 /*return*/];
                 }
             });

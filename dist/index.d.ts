@@ -7,8 +7,8 @@ export interface CalDavClient {
     getEventByUid(eventUid: string): Promise<ICAL.Event | undefined>;
     deleteEvent(eventUid: string): Promise<void>;
     listAllEvents(): Promise<ICAL.Event[]>;
-    createEvent(id: string, referenceIds: string[], title: string, description: string, location: string, startDate: ICAL.TimeJsonData, endDate: ICAL.TimeJsonData, attendees: Attendee[], categories: string[]): Promise<void>;
-    updateEvent(event: ICAL.Event, referenceIds: string[], title: string, description: string, location: string, startDate: ICAL.TimeJsonData, endDate: ICAL.TimeJsonData, attendees: Attendee[], categories: string[]): Promise<void>;
+    createEvent(eventUrl: string, id: string, referenceIds: string[], title: string, description: string, location: string, startDate: ICAL.TimeJsonData, endDate: ICAL.TimeJsonData, attendees: Attendee[], categories: string[]): Promise<void>;
+    updateEvent(eventUrl: string, event: ICAL.Event, referenceIds: string[], title: string, description: string, location: string, startDate: ICAL.TimeJsonData, endDate: ICAL.TimeJsonData, attendees: Attendee[], categories: string[]): Promise<void>;
     listEventsInTimeRange(startDate: Date, endDate?: Date): Promise<ICAL.Event[]>;
 }
 export declare class DefaultCalDavClient {
@@ -17,9 +17,9 @@ export declare class DefaultCalDavClient {
     constructor(username: string, password: string, calendarUrl: string, service?: CalDavService | null, parser?: CalDavParser | null);
     getEventByUrl: (eventUrl: string) => Promise<ICAL.Event | undefined>;
     getEventByUid: (eventUid: string) => Promise<ICAL.Event | undefined>;
-    deleteEvent: (eventUid: string) => Promise<void>;
+    deleteEvent: (eventUrl: string) => Promise<void>;
     listAllEvents: () => Promise<ICAL.Event[]>;
     listEventsInTimeRange: (startDate: Date, endDate?: Date) => Promise<ICAL.Event[]>;
-    createEvent: (id: string, referenceIds: string[], title: string, description: string, location: string, startDate: any, endDate: any, attendees: Attendee[], categories: string[]) => Promise<void>;
-    updateEvent: (event: any, referenceIds: string[], title: string, description: string, location: string, startDate: any, endDate: any, attendees: Attendee[], categories: string[]) => Promise<void>;
+    createEvent: (eventUrl: string, id: string, referenceIds: string[], title: string, description: string, location: string, startDate: any, endDate: any, attendees: Attendee[], categories: string[]) => Promise<void>;
+    updateEvent: (eventUrl: string, event: any, referenceIds: string[], title: string, description: string, location: string, startDate: any, endDate: any, attendees: Attendee[], categories: string[]) => Promise<void>;
 }

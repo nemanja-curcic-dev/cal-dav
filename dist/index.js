@@ -67,6 +67,7 @@ var DefaultCalDavClient = /** @class */ (function () {
                             comp = new ICAL.Component(calData);
                             vevent = comp.getFirstSubcomponent('vevent');
                             event_1 = new ICAL.Event(vevent);
+                            event_1.component.addPropertyWithValue('url', eventUrl);
                             logger_1["default"].info("CalDavClient.GetEvent: Successfully got event " + event_1.uid + ". ");
                             return [2 /*return*/, event_1];
                         }
@@ -80,44 +81,46 @@ var DefaultCalDavClient = /** @class */ (function () {
             });
         }); };
         this.getEventByUid = function (eventUid) { return __awaiter(_this, void 0, void 0, function () {
-            var response, calData, _a, _b, comp, vevent, event_2, e_2;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
+            var response, parsedData, calData, comp, vevent, event_2, urlParts, e_2;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
                     case 0:
-                        _c.trys.push([0, 4, , 5]);
+                        _a.trys.push([0, 4, , 5]);
                         return [4 /*yield*/, this.service.getEventByUid(eventUid)];
                     case 1:
-                        response = _c.sent();
+                        response = _a.sent();
                         if (!(response.status === 207)) return [3 /*break*/, 3];
-                        _b = (_a = ICAL).parse;
                         return [4 /*yield*/, this.parser.parseEvent(response.data)];
                     case 2:
-                        calData = _b.apply(_a, [_c.sent()]);
+                        parsedData = _a.sent();
+                        calData = ICAL.parse(parsedData.event);
                         comp = new ICAL.Component(calData);
                         vevent = comp.getFirstSubcomponent('vevent');
                         event_2 = new ICAL.Event(vevent);
+                        urlParts = parsedData.url.split('/');
+                        event_2.component.addPropertyWithValue('url', urlParts[urlParts.length - 1]);
                         logger_1["default"].info("CalDavClient.GetEvent: Successfully got event " + event_2.uid + ". ");
                         return [2 /*return*/, event_2];
                     case 3: return [3 /*break*/, 5];
                     case 4:
-                        e_2 = _c.sent();
+                        e_2 = _a.sent();
                         logger_1["default"].error("CalDavClient.GetEventByUid: " + e_2.message + ". ");
                         return [3 /*break*/, 5];
                     case 5: return [2 /*return*/];
                 }
             });
         }); };
-        this.deleteEvent = function (eventUid) { return __awaiter(_this, void 0, void 0, function () {
+        this.deleteEvent = function (eventUrl) { return __awaiter(_this, void 0, void 0, function () {
             var response, e_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, this.service.deleteEvent(eventUid)];
+                        return [4 /*yield*/, this.service.deleteEvent(eventUrl)];
                     case 1:
                         response = _a.sent();
                         if (response.status === 204) {
-                            logger_1["default"].info("CalDavClient.DeleteEvent: Successfully deleted event " + eventUid + ". ");
+                            logger_1["default"].info("CalDavClient.DeleteEvent: Successfully deleted event " + eventUrl + ". ");
                             return [2 /*return*/];
                         }
                         return [3 /*break*/, 3];
@@ -209,7 +212,7 @@ var DefaultCalDavClient = /** @class */ (function () {
                 }
             });
         }); };
-        this.createEvent = function (id, referenceIds, title, description, location, startDate, endDate, attendees, categories) { return __awaiter(_this, void 0, void 0, function () {
+        this.createEvent = function (eventUrl, id, referenceIds, title, description, location, startDate, endDate, attendees, categories) { return __awaiter(_this, void 0, void 0, function () {
             var calendar, event_3, _i, categories_1, category, categoriesProperty, eventString, e_6;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -242,7 +245,7 @@ var DefaultCalDavClient = /** @class */ (function () {
                         eventString = event_3.toString();
                         // change ATTENDEE: to ATTENDEE;
                         eventString = eventString.replace(/ATTENDEE:/gi, 'ATTENDEE;');
-                        return [4 /*yield*/, this.service.createUpdateEvent(eventString, id)];
+                        return [4 /*yield*/, this.service.createUpdateEvent(eventString, eventUrl)];
                     case 1:
                         _a.sent();
                         logger_1["default"].info("CalDavClient.CreateUpdateEvent: Successfully created event " + id + ". ");
@@ -255,7 +258,7 @@ var DefaultCalDavClient = /** @class */ (function () {
                 }
             });
         }); };
-        this.updateEvent = function (event, referenceIds, title, description, location, startDate, endDate, attendees, categories) { return __awaiter(_this, void 0, void 0, function () {
+        this.updateEvent = function (eventUrl, event, referenceIds, title, description, location, startDate, endDate, attendees, categories) { return __awaiter(_this, void 0, void 0, function () {
             var _i, categories_2, category, categoriesProperty, eventString, e_7;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -285,7 +288,7 @@ var DefaultCalDavClient = /** @class */ (function () {
                         }
                         eventString = event.toString();
                         eventString = eventString.replace(/ATTENDEE:/gi, 'ATTENDEE;');
-                        return [4 /*yield*/, this.service.createUpdateEvent('BEGIN:VCALENDAR\r\n' + eventString + '\r\nEND:VCALENDAR', event.uid)];
+                        return [4 /*yield*/, this.service.createUpdateEvent('BEGIN:VCALENDAR\r\n' + eventString + '\r\nEND:VCALENDAR', eventUrl)];
                     case 1:
                         _a.sent();
                         return [3 /*break*/, 3];

@@ -15,6 +15,8 @@ export interface CalDavService {
 
     listEventsInTimeRange(startDate: Date, endDate?: Date): Promise<AxiosResponse>;
 
+    multiGetEvents(eventUrls: string[]): Promise<AxiosResponse>;
+
     getCtag(): Promise<AxiosResponse>;
 
     getEtags(): Promise<AxiosResponse>;
@@ -182,6 +184,31 @@ export class DefaultCalDavService implements CalDavService {
         });       
     };
 
+    multiGetEvents = async(eventUrls: string[]): Promise<AxiosResponse> => {
+        // Method for getting multiple by their url
+        // Response status upon successfull request is 207
+        return await this.axios.request({
+            method: 'REPORT',
+            url: this.calendarUrl,
+            headers: {
+                'Prefer': 'return-minimal',
+                'Content-type': 'application/xml; charset=utf-8'
+            },
+            data: `<C:calendar-multiget xmlns:D="DAV:"
+                    xmlns:C="urn:ietf:params:xml:ns:caldav">
+                        <D:prop>
+                        <D:getetag/>
+                        <C:calendar-data/>
+                        </D:prop>
+                        ${this.multiGetSetRequestUrls(eventUrls)}
+                    </C:calendar-multiget>`,
+            auth: {
+                username: this.username,
+                password: this.password
+            }
+        });       
+    };
+
     getCtag = async(): Promise<AxiosResponse> => {
         // Method for getting ctag (for checking if anything changed on the calendar)
         // Response status upon successfull request is 207
@@ -235,4 +262,14 @@ export class DefaultCalDavService implements CalDavService {
             }
         });
     };
+
+    private multiGetSetRequestUrls(eventUrls: string[]): string {
+        let data = '';
+
+        for(const url of eventUrls){
+            data += `<D:href>${url}</D:href>\r\n`;
+        }
+
+        return data;
+    }
 }
