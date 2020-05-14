@@ -53,13 +53,13 @@ var logger_1 = __importDefault(require("@coozzy/logger"));
 var DefaultCalDavClient = /** @class */ (function () {
     function DefaultCalDavClient(username, password, calendarUrl, service, parser) {
         var _this = this;
-        this.getEvent = function (eventUid) { return __awaiter(_this, void 0, void 0, function () {
+        this.getEventByUrl = function (eventUrl) { return __awaiter(_this, void 0, void 0, function () {
             var response, calData, comp, vevent, event_1, e_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, this.service.getEvent(eventUid)];
+                        return [4 /*yield*/, this.service.getEventByUrl(eventUrl)];
                     case 1:
                         response = _a.sent();
                         if (response.status === 200) {
@@ -73,14 +73,42 @@ var DefaultCalDavClient = /** @class */ (function () {
                         return [3 /*break*/, 3];
                     case 2:
                         e_1 = _a.sent();
-                        logger_1["default"].error("CalDavClient.GetEvent: " + e_1.message + ". ");
+                        logger_1["default"].error("CalDavClient.GetEventByUrl: " + e_1.message + ". ");
                         return [3 /*break*/, 3];
                     case 3: return [2 /*return*/];
                 }
             });
         }); };
+        this.getEventByUid = function (eventUid) { return __awaiter(_this, void 0, void 0, function () {
+            var response, calData, _a, _b, comp, vevent, event_2, e_2;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0:
+                        _c.trys.push([0, 4, , 5]);
+                        return [4 /*yield*/, this.service.getEventByUid(eventUid)];
+                    case 1:
+                        response = _c.sent();
+                        if (!(response.status === 207)) return [3 /*break*/, 3];
+                        _b = (_a = ICAL).parse;
+                        return [4 /*yield*/, this.parser.parseEvent(response.data)];
+                    case 2:
+                        calData = _b.apply(_a, [_c.sent()]);
+                        comp = new ICAL.Component(calData);
+                        vevent = comp.getFirstSubcomponent('vevent');
+                        event_2 = new ICAL.Event(vevent);
+                        logger_1["default"].info("CalDavClient.GetEvent: Successfully got event " + event_2.uid + ". ");
+                        return [2 /*return*/, event_2];
+                    case 3: return [3 /*break*/, 5];
+                    case 4:
+                        e_2 = _c.sent();
+                        logger_1["default"].error("CalDavClient.GetEventByUid: " + e_2.message + ". ");
+                        return [3 /*break*/, 5];
+                    case 5: return [2 /*return*/];
+                }
+            });
+        }); };
         this.deleteEvent = function (eventUid) { return __awaiter(_this, void 0, void 0, function () {
-            var response, e_2;
+            var response, e_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -94,15 +122,15 @@ var DefaultCalDavClient = /** @class */ (function () {
                         }
                         return [3 /*break*/, 3];
                     case 2:
-                        e_2 = _a.sent();
-                        logger_1["default"].error("CalDavClient.DeleteEvent: " + e_2.message + ". ");
+                        e_3 = _a.sent();
+                        logger_1["default"].error("CalDavClient.DeleteEvent: " + e_3.message + ". ");
                         return [3 /*break*/, 3];
                     case 3: return [2 /*return*/];
                 }
             });
         }); };
         this.listAllEvents = function () { return __awaiter(_this, void 0, void 0, function () {
-            var response, events, eventsData, _i, eventsData_1, eventData, calData, comp, vevents, i, urlParts, e_3;
+            var response, events, eventsData, _i, eventsData_1, eventData, calData, comp, vevents, i, urlParts, e_4;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -134,15 +162,15 @@ var DefaultCalDavClient = /** @class */ (function () {
                         return [2 /*return*/, events];
                     case 3: return [2 /*return*/, []];
                     case 4:
-                        e_3 = _a.sent();
-                        logger_1["default"].error("CalDavClient.ListAllEvents: " + e_3.message + ". ");
+                        e_4 = _a.sent();
+                        logger_1["default"].error("CalDavClient.ListAllEvents: " + e_4.message + ". ");
                         return [2 /*return*/, []];
                     case 5: return [2 /*return*/];
                 }
             });
         }); };
         this.listEventsInTimeRange = function (startDate, endDate) { return __awaiter(_this, void 0, void 0, function () {
-            var response, events, eventsData, _i, eventsData_2, eventData, calData, comp, vevents, i, urlParts, e_4;
+            var response, events, eventsData, _i, eventsData_2, eventData, calData, comp, vevents, i, urlParts, e_5;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -174,44 +202,44 @@ var DefaultCalDavClient = /** @class */ (function () {
                         return [2 /*return*/, events];
                     case 3: return [2 /*return*/, []];
                     case 4:
-                        e_4 = _a.sent();
-                        logger_1["default"].error("CalDavClient.ListEventsInTimRange: " + e_4.message + ". ");
+                        e_5 = _a.sent();
+                        logger_1["default"].error("CalDavClient.ListEventsInTimRange: " + e_5.message + ". ");
                         return [2 /*return*/, []];
                     case 5: return [2 /*return*/];
                 }
             });
         }); };
         this.createEvent = function (id, referenceIds, title, description, location, startDate, endDate, attendees, categories) { return __awaiter(_this, void 0, void 0, function () {
-            var calendar, event_2, _i, categories_1, category, categoriesProperty, eventString, e_5;
+            var calendar, event_3, _i, categories_1, category, categoriesProperty, eventString, e_6;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
                         calendar = new ICAL.Component('vcalendar');
-                        event_2 = new ICAL.Event(calendar);
-                        event_2.component.addPropertyWithValue('BEGIN', 'VEVENT');
-                        event_2.uid = id;
-                        event_2.summary = title;
-                        event_2.description = description;
-                        event_2.location = location;
-                        event_2.startDate = new ICAL.Time(startDate);
-                        event_2.endDate = new ICAL.Time(endDate);
+                        event_3 = new ICAL.Event(calendar);
+                        event_3.component.addPropertyWithValue('BEGIN', 'VEVENT');
+                        event_3.uid = id;
+                        event_3.summary = title;
+                        event_3.description = description;
+                        event_3.location = location;
+                        event_3.startDate = new ICAL.Time(startDate);
+                        event_3.endDate = new ICAL.Time(endDate);
                         if (categories.length) {
                             for (_i = 0, categories_1 = categories; _i < categories_1.length; _i++) {
                                 category = categories_1[_i];
                                 categoriesProperty = new ICAL.Property('categories');
                                 categoriesProperty.setValue(category);
-                                event_2.component.addProperty(categoriesProperty);
+                                event_3.component.addProperty(categoriesProperty);
                             }
                         }
                         if (attendees.length) {
-                            this.addAttendees(attendees, event_2);
+                            this.addAttendees(attendees, event_3);
                         }
                         if (referenceIds.length) {
-                            event_2.component.addPropertyWithValue('referenceids', referenceIds.join(','));
+                            event_3.component.addPropertyWithValue('referenceids', referenceIds.join(','));
                         }
-                        event_2.component.addPropertyWithValue('END', 'VEVENT');
-                        eventString = event_2.toString();
+                        event_3.component.addPropertyWithValue('END', 'VEVENT');
+                        eventString = event_3.toString();
                         // change ATTENDEE: to ATTENDEE;
                         eventString = eventString.replace(/ATTENDEE:/gi, 'ATTENDEE;');
                         return [4 /*yield*/, this.service.createUpdateEvent(eventString, id)];
@@ -220,15 +248,15 @@ var DefaultCalDavClient = /** @class */ (function () {
                         logger_1["default"].info("CalDavClient.CreateUpdateEvent: Successfully created event " + id + ". ");
                         return [3 /*break*/, 3];
                     case 2:
-                        e_5 = _a.sent();
-                        logger_1["default"].error("CalDavClient.CreateEvent: " + e_5.message + ". ");
+                        e_6 = _a.sent();
+                        logger_1["default"].error("CalDavClient.CreateEvent: " + e_6.message + ". ");
                         return [3 /*break*/, 3];
                     case 3: return [2 /*return*/];
                 }
             });
         }); };
         this.updateEvent = function (event, referenceIds, title, description, location, startDate, endDate, attendees, categories) { return __awaiter(_this, void 0, void 0, function () {
-            var _i, categories_2, category, categoriesProperty, eventString, e_6;
+            var _i, categories_2, category, categoriesProperty, eventString, e_7;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -262,8 +290,8 @@ var DefaultCalDavClient = /** @class */ (function () {
                         _a.sent();
                         return [3 /*break*/, 3];
                     case 2:
-                        e_6 = _a.sent();
-                        logger_1["default"].error("CalDavClient.UpdateEvent: " + e_6.message + ". ");
+                        e_7 = _a.sent();
+                        logger_1["default"].error("CalDavClient.UpdateEvent: " + e_7.message + ". ");
                         return [3 /*break*/, 3];
                     case 3: return [2 /*return*/];
                 }

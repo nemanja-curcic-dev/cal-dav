@@ -44,15 +44,38 @@ var moment_1 = __importDefault(require("moment"));
 var DefaultCalDavService = /** @class */ (function () {
     function DefaultCalDavService(username, password, calendarUrl, axios) {
         var _this = this;
-        this.getEvent = function (eventUid) { return __awaiter(_this, void 0, void 0, function () {
+        this.getEventByUrl = function (eventUrl) { return __awaiter(_this, void 0, void 0, function () {
             var url;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        url = "" + this.calendarUrl + eventUid;
+                        url = "" + this.calendarUrl + eventUrl;
                         return [4 /*yield*/, this.axios.request({
                                 method: 'GET',
                                 url: url,
+                                auth: {
+                                    username: this.username,
+                                    password: this.password
+                                }
+                            })];
+                    case 1: return [2 /*return*/, _a.sent()];
+                }
+            });
+        }); };
+        this.getEventByUid = function (eventUid) { return __awaiter(_this, void 0, void 0, function () {
+            var url;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        url = "" + this.calendarUrl;
+                        return [4 /*yield*/, this.axios.request({
+                                method: 'REPORT',
+                                url: url,
+                                headers: {
+                                    'Content-Type': 'text/calendar; charset=utf-8',
+                                    'Depth': 1
+                                },
+                                data: "<C:calendar-query xmlns:C=\"urn:ietf:params:xml:ns:caldav\">\n                    <D:prop xmlns:D=\"DAV:\">\n                        <D:getetag/>\n                        <C:calendar-data/>\n                        </D:prop>\n                        <C:filter>\n                        <C:comp-filter name=\"VCALENDAR\">\n                            <C:comp-filter name=\"VEVENT\">\n                            <C:prop-filter name=\"UID\">\n                                <C:text-match collation=\"i;octet\"\n                                >" + eventUid + "</C:text-match>\n                            </C:prop-filter>\n                            </C:comp-filter>\n                        </C:comp-filter>\n                        </C:filter>\n                    </C:calendar-query>",
                                 auth: {
                                     username: this.username,
                                     password: this.password

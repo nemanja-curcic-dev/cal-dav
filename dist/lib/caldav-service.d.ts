@@ -1,6 +1,7 @@
 import { AxiosResponse, AxiosInstance } from 'axios';
 export interface CalDavService {
-    getEvent(eventUid: string): Promise<AxiosResponse>;
+    getEventByUrl(eventUrl: string): Promise<AxiosResponse>;
+    getEventByUid(eventUid: string): Promise<AxiosResponse>;
     createUpdateEvent(eventData: string, eventUid: string): Promise<AxiosResponse>;
     deleteEvent(eventUid: string): Promise<AxiosResponse>;
     listAllEvents(): Promise<AxiosResponse>;
@@ -14,7 +15,8 @@ export declare class DefaultCalDavService implements CalDavService {
     password: string;
     calendarUrl: string;
     constructor(username: string, password: string, calendarUrl: string, axios?: AxiosInstance | null);
-    getEvent: (eventUid: string) => Promise<AxiosResponse<any>>;
+    getEventByUrl: (eventUrl: string) => Promise<AxiosResponse<any>>;
+    getEventByUid: (eventUid: string) => Promise<AxiosResponse<any>>;
     createUpdateEvent: (eventData: string, eventUid: string) => Promise<AxiosResponse<any>>;
     deleteEvent: (eventUid: string) => Promise<AxiosResponse<any>>;
     listAllEvents: () => Promise<AxiosResponse<any>>;
