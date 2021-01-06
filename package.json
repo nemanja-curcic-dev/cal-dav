@@ -29,7 +29,7 @@
     "@types/axios": "^0.14.0",
     "@types/moment": "^2.13.0",
     "@types/xml2js": "^0.4.5",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "ical.js": "^1.1.2",
     "moment": "^2.12.0",
     "xml2js": "^0.4.17"
